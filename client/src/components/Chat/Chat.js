@@ -2,8 +2,14 @@ import { useEffect, useState } from "react"
 import React from 'react'
 import queryString from 'query-string'
 import io from 'socket.io-client'
+import './Chat.css';
+import InfoBar from '../InfoBar/InfoBar';
+import Input from '../Input/Input';
+import Messages from '../Messages/Messages'
 
 let socket;
+
+
 
 var connectionOptions =  {
     "force new connection" : true,
@@ -19,8 +25,7 @@ const Chat = ({location})=>{
     const[message , setMessage] = useState('')
     const[messages , setMessages] = useState([])
 
-
-    const ENDPOINT = 'localhost:5000';
+    const ENDPOINT = ' https://harshgarg-chat-app.herokuapp.com/';
 
     useEffect(()=>{
         const {name , room } = queryString.parse(location.search)
@@ -41,7 +46,6 @@ const Chat = ({location})=>{
 
     },[ENDPOINT, location.search]);
 
-
     useEffect( ()=> {
         socket.on('message' , (message)=>{
             setMessages([...messages, message])
@@ -50,18 +54,26 @@ const Chat = ({location})=>{
 
     //function for sending message
 
-    const 
+    const sendMessage = (event) => {
+        event.preventDefault();
+    
+        if(message) {
+          socket.emit('sendMessage', message, () => setMessage(''));
+        }
+      }
 
-    return(
-        <div className= " outerContainer">
-            <div className= "container">
-                <input 
-                value={message}
-                onChange={(event)=> setMessage(event.target.value)}
-                onKeyPress={event => event.key === 'Enter' ? sendMessage(event): null } />
-            </div>
+    console.log(message, messages);
+
+    return (
+        <div className="outerContainer">
+          <div className="container">
+              <InfoBar room={room} />
+              <Messages messages={messages} name={name} />
+              <Input message={message} setMessage={setMessage} sendMessage={sendMessage} />
+          </div>
+          {/* <TextContainer users={users}/> */}
         </div>
-    );
+      );
 }
 
 export default Chat;
